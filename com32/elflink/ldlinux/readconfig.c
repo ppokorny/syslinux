@@ -786,7 +786,7 @@ static int parse_path(char *p)
 	char *c = p;
 
 	/* Find the next directory */
-	while (*c && *c != ':')
+	while (*c && !my_isspace(*c))
 	    c++;
 
 	str = refstrndup(p, c - p);
