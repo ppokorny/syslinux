@@ -32,7 +32,7 @@ __export struct path_entry *path_add(const char *str)
     if (!entry->str)
 	goto bail;
 
-    list_add(&entry->list, &PATH);
+    list_add_tail(&entry->list, &PATH);
 
     return entry;
 
