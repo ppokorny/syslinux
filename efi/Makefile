@@ -14,18 +14,20 @@ VPATH = $(SRC)
 include $(MAKEDIR)/lib.mk
 include $(MAKEDIR)/efi.mk
 
+CC_FOR_BUILD ?= $(CC)
+
 # Upstream gnu-efi has old-style function definitions.
 CFLAGS += -Wno-strict-prototypes
 
-CORE_CSRC := $(wildcard $(core)/*.c $(core)/*/*.c $(core)/*/*/*.c)
+CORE_CSRC := $(sort $(wildcard $(core)/*.c $(core)/*/*.c $(core)/*/*/*.c))
 CORE_COBJ := $(subst $(core),$(OBJ)/../core,$(patsubst %.c,%.o,$(CORE_CSRC)))
 
 # We don't want to include any of the networking stack or the thread
 # code since it will be implemented completely differently for EFI.
-FILTERED_OBJS:= $(subst $(core),$(OBJ)/../core,$(patsubst %.c,%.o, \
+FILTERED_OBJS:= $(sort $(subst $(core),$(OBJ)/../core,$(patsubst %.c,%.o, \
 	$(wildcard $(core)/legacynet/*.c) \
 	$(wildcard $(core)/fs/pxe/*.c) \
-	$(wildcard $(core)/thread/*.c)))
+	$(wildcard $(core)/thread/*.c))))
 
 # Don't include unit tests
 FILTERED_OBJS += $(subst $(core),$(OBJ)/../core, \
@@ -44,7 +46,7 @@ CORE_OBJS += $(addprefix $(OBJ)/../core/, \
 LIB_OBJS = $(addprefix $(objdir)/com32/lib/,$(CORELIBOBJS)) \
 	$(LIBEFI)
 
-CSRC = $(wildcard $(SRC)/*.c)
+CSRC = $(sort $(wildcard $(SRC)/*.c))
 OBJS = $(subst $(SRC)/,,$(filter-out %wrapper.o, $(patsubst %.c,%.o,$(CSRC))))
 
 OBJS += $(objdir)/core/codepage.o $(ARCH)/linux.o
@@ -78,7 +80,7 @@ syslinux.so: $(OBJS) $(CORE_OBJS) $(LIB_OBJS)
 #	cp $^ $@
 
 wrapper: wrapper.c
-	$(CC) $^ -o $@
+	$(CC_FOR_BUILD) $^ -o $@
 
 #
 # Build the wrapper app and wrap our .so to produce a .efi

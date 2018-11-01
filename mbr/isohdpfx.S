@@ -167,20 +167,22 @@ next:
 	   read_sector_cbios: movb $0x42, %ah ;  jmp read_common */
 	movl	$0xeb42b4+((read_common-read_sector_cbios-4) << 24), \
 		(read_sector_cbios)
-	jmp	1f
+	jmp	2f
 1:
+	xor	%cx, %cx	/* Clear EBIOS flag. */
+2:
 	popw	%dx
 	pushw	%cx		/* EBIOS flag */
 
 	/* Get (C)HS geometry */
 	movb	$0x08, %ah
 	int	$0x13
-	andw	$0x3f, %cx	/* Sector count */
 	popw	%bx		/* EBIOS flag */
-	pushw	%cx		/* -16: Save sectors on the stack */
 	movzbw	%dh, %ax	/* dh = max head */
 	incw	%ax		/* From 0-based max to count */
-	pushw	%ax		/* -18: Save heads on the stack */
+	pushw	%ax		/* -16: Save heads on the stack */
+	andw	$0x3f, %cx	/* Sector count */
+	pushw	%cx		/* -18: Save sectors on the stack */
 	mulw	%cx		/* Heads*sectors -> sectors per cylinder */
 
 	pushw	%bx		/* -20: EBIOS flag */
